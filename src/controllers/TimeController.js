@@ -6,7 +6,15 @@ module.exports = {
     async infoTime(req, res) {
         function encurtaNome(nome){
             if(nome.length > 10){
+                
                 let nomeSeparado = nome.split(' ');
+
+                /* Para remover valores em em branco */
+                for (let i = 0; i < nomeSeparado.length; i++) {
+                    if(!nomeSeparado[i]){
+                        nomeSeparado.splice(i,1);
+                    }                    
+                }
                 for (let i = 0; i < nomeSeparado.length-1; i++) {
                     nomeSeparado[i] = nomeSeparado[i][0]+". ";                
                 }
@@ -14,6 +22,24 @@ module.exports = {
             } else {
                 return nome;
             }
+        }
+
+        function isCapitao(atletaId,capitaoId,pontosNomais){
+           return  capitaoId === atletaId ? 2*parseFloat(pontosNomais.toFixed(1)) : parseFloat(pontosNomais.toFixed(1))
+        }
+
+        function esquema(esquemaId){
+            const esquemas = [
+                "",
+                "3-4-3",
+                "3-5-2",
+                "4-3-3",
+                "4-4-2",
+                "4-5-1",
+                "5-3-2",
+                "5-4-1",
+            ]
+            return esquemas[esquemaId];
         }
         
         try {
@@ -31,9 +57,9 @@ module.exports = {
                 time['atletas'][i].preco_num = undefined;
                 time['atletas'][i].variacao_num = undefined;
                 time['atletas'][i].jogos_num = undefined;
-                time['atletas'][i].scout = undefined;
+                // time['atletas'][i].scout = undefined;
                 time['atletas'][i].media_num= undefined;
-                time['atletas'][i].pontos_num = parseFloat(time['atletas'][i].pontos_num.toFixed(1));
+                time['atletas'][i].pontos_num = isCapitao(time['capitao_id'], time['atletas'][i].atleta_id, time['atletas'][i].pontos_num);
                 time['atletas'][i].posicao = posicao
                 time['atletas'][i].posicao_classe = `pos-${posicao}`;
                 time['atletas'][i].capitao = time['capitao_id'] === time['atletas'][i].atleta_id ? true : false;
@@ -43,16 +69,16 @@ module.exports = {
             time['status'] = undefined;
             time['capitao_id'] = undefined;
             time['time_info'] = {};
-            time['time_info']['esquema'] = time['esquema_id'];
+            // time['time_info']['esquema'] = time['esquema_id'];
             time['time_info']['escudo_url'] = time['time']['url_escudo_png'];
             time['time_info']['nome'] = encurtaNome(time['time']['nome']);
 
             
             time['time'] = undefined;
-            time['pontos'] = parseFloat( time['pontos'].toFixed(2));
-            time['esquema_id'] = undefined;
+            time['pontos'] = parseFloat( time['pontos'].toFixed(1));
+            time['esquema'] = esquema(time['esquema_id']);
             time['valor_time'] = undefined;
-            // time['patrimonio'] = undefined;
+            time['patrimonio'] = parseFloat( time['patrimonio'].toFixed(1));;
             time['rodada_atual'] = undefined;
 
             // ordena os jogadores de acordo com suas posições
