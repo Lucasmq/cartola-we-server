@@ -16,7 +16,8 @@ app.use(require('./routes'));
 app.use('/img', express.static(path.resolve(__dirname, 'img')));
 app.use('/audio', express.static(path.resolve(__dirname, 'audio')));
 
+const PORT = process.env.PORT || 3005;
 
-server.listen(3005, async () => {
-    console.log("on em localhost:3005");
+server.listen(PORT, async () => {
+    console.log(`on em ${PORT}` );
 })
