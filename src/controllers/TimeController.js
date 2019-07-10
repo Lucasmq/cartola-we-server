@@ -68,6 +68,7 @@ module.exports = {
                 time['posicoes'] = undefined;
                 time['status'] = undefined;
                 time['capitao_id'] = undefined;
+                time['montou_time'] = true;
                 time['time_info'] = {};
                 time['time_info']['escudo_url'] = time['time']['url_escudo_png'];
                 time['time_info']['nome_completo'] = time['time']['nome'];
