@@ -13,6 +13,7 @@ app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
 app.use(cors());
 app.use(require('./routes'));
+app.use('/', express.static(path.resolve(__dirname, 'loaderio')));
 app.use('/img', express.static(path.resolve(__dirname, 'img')));
 app.use('/audio', express.static(path.resolve(__dirname, 'audio')));
 
