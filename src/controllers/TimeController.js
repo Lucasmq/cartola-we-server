@@ -1,6 +1,10 @@
 const axios = require('axios');
 
-const URL = 'https://api.cartolafc.globo.com/time/id/'
+const URL = 'https://api.cartolafc.globo.com/time/id/';
+
+const URL_MERCADO = 'https://api.cartolafc.globo.com/mercado/status';
+
+const URL_PONTUADOS = 'https://api.cartolafc.globo.com/atletas/pontuados';
 
 module.exports = {
     async infoTime(req, res) {
@@ -42,13 +46,30 @@ module.exports = {
             return esquemas[esquemaId];
         }
         
+        async function getStatusMercado(){
+            let response = await axios.get(URL_MERCADO);
+            let statusMercado = response.data.status_mercado;
+            return statusMercado;
+        }
+
+        async function pegaPontuados(){
+            let response = await axios.get(URL_PONTUADOS);
+            let pontuados = response.data;
+            return pontuados;
+        } 
+
         try {
             let response = await axios.get(`${URL}${req.params.id}`);
             let time = response.data;
+            let statusMercado = await getStatusMercado();
+            // se o mercado estiver aberto
+            let pontuadosJSON = (statusMercado != 2 ) ? '' : await pegaPontuados();
+            // console.log
             if(time['atletas']){
                 for (let i = 0; i < time['atletas'].length; i++) {
                     let posicao_id = time['atletas'][i]['posicao_id']
                     let posicao = time['posicoes'][posicao_id]['abreviacao'];
+                    
                     
                     time['atletas'][i].nome = undefined;
                     time['atletas'][i].apelido = encurtaNome(time['atletas'][i].apelido);
@@ -59,7 +80,14 @@ module.exports = {
                     time['atletas'][i].variacao_num = undefined;
                     time['atletas'][i].jogos_num = undefined;
                     time['atletas'][i].media_num= undefined;
-                    time['atletas'][i].pontos_num = isCapitao(time['capitao_id'], time['atletas'][i].atleta_id, time['atletas'][i].pontos_num);
+
+                    if(statusMercado === 2){
+                        let atletaJogando = pontuadosJSON['atletas'][time['atletas'][i].atleta_id] ? true : false;
+                        time['atletas'][i].pontos_num = atletaJogando ? pontuadosJSON['atletas'][time['atletas'][i].atleta_id]['pontuacao'] : 0;
+                        time['atletas'][i].scout = atletaJogando ? pontuadosJSON['atletas'][time['atletas'][i].atleta_id]['scout'] : null;
+                    }else{
+                        time['atletas'][i].pontos_num = isCapitao(time['capitao_id'], time['atletas'][i].atleta_id, time['atletas'][i].pontos_num);
+                    }
                     time['atletas'][i].posicao = posicao
                     time['atletas'][i].posicao_classe = `pos-${posicao}`;
                     time['atletas'][i].capitao = time['capitao_id'] === time['atletas'][i].atleta_id ? true : false;
@@ -78,7 +106,7 @@ module.exports = {
                 time['pontos'] = parseFloat( time['pontos'].toFixed(1));
                 time['esquema'] = esquema(time['esquema_id']);
                 time['valor_time'] = undefined;
-                time['patrimonio'] = parseFloat( time['patrimonio'].toFixed(1));;
+                time['patrimonio'] = parseFloat( time['patrimonio'].toFixed(1));
                 time['rodada_atual'] = undefined;
 
                 // ordena os jogadores de acordo com suas posições
