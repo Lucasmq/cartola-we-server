@@ -65,6 +65,7 @@ module.exports = {
             // se o mercado estiver aberto
             let pontuadosJSON = (statusMercado != 2 ) ? '' : await pegaPontuados();
             // console.log
+            let somatorioJogadoresPontuando = 0;
             if(time['atletas']){
                 for (let i = 0; i < time['atletas'].length; i++) {
                     let posicao_id = time['atletas'][i]['posicao_id']
@@ -85,6 +86,7 @@ module.exports = {
                         let atletaJogando = pontuadosJSON['atletas'][time['atletas'][i].atleta_id] ? true : false;
                         time['atletas'][i].pontos_num = atletaJogando ? pontuadosJSON['atletas'][time['atletas'][i].atleta_id]['pontuacao'] : 0;
                         time['atletas'][i].scout = atletaJogando ? pontuadosJSON['atletas'][time['atletas'][i].atleta_id]['scout'] : null;
+                        somatorioJogadoresPontuando += time['atletas'][i].pontos_num;
                     }else{
                         time['atletas'][i].pontos_num = isCapitao(time['capitao_id'], time['atletas'][i].atleta_id, time['atletas'][i].pontos_num);
                     }
@@ -103,7 +105,7 @@ module.exports = {
                 time['time_info']['nome'] = encurtaNome(time['time']['nome']);
                 
                 time['time'] = undefined;
-                time['pontos'] = parseFloat( time['pontos'].toFixed(1));
+                time['pontos'] = statusMercado === 2 ? parseFloat(somatorioJogadoresPontuando.toFixed(1)) : parseFloat( time['pontos'].toFixed(1));
                 time['esquema'] = esquema(time['esquema_id']);
                 time['valor_time'] = undefined;
                 time['patrimonio'] = parseFloat( time['patrimonio'].toFixed(1));
