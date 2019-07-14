@@ -84,7 +84,7 @@ module.exports = {
 
                     if(statusMercado === 2){
                         let atletaJogando = pontuadosJSON['atletas'][time['atletas'][i].atleta_id] ? true : false;
-                        time['atletas'][i].pontos_num = atletaJogando ? pontuadosJSON['atletas'][time['atletas'][i].atleta_id]['pontuacao'] : 0;
+                        time['atletas'][i].pontos_num = atletaJogando ? isCapitao(time['capitao_id'], pontuadosJSON['atletas'][time['atletas'][i].atleta_id]['pontuacao']) : 0;
                         time['atletas'][i].scout = atletaJogando ? pontuadosJSON['atletas'][time['atletas'][i].atleta_id]['scout'] : null;
                         somatorioJogadoresPontuando += time['atletas'][i].pontos_num;
                     }else{
