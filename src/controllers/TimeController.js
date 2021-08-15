@@ -43,7 +43,11 @@ module.exports = {
                 "5-3-2",
                 "5-4-1",
             ]
-            return esquemas[esquemaId];
+            if(esquemaId) {
+                return esquemas[esquemaId];
+            } else {
+                return esquemas[4]
+            }
         }
         
         async function getStatusMercado(){
@@ -94,24 +98,9 @@ module.exports = {
                     time['atletas'][i].posicao = posicao
                     time['atletas'][i].posicao_classe = `pos-${posicao}`;
                     time['atletas'][i].capitao = time['capitao_id'] === time['atletas'][i].atleta_id ? true : false;
-                }
-                // time['clubes'] = undefined;
-                time['posicoes'] = undefined;
-                time['status'] = undefined;
-                time['capitao_id'] = undefined;
-                time['montou_time'] = true;
-                time['time_info'] = {};
-                time['time_info']['escudo_url'] = time['time']['url_escudo_png'];
-                time['time_info']['nome_completo'] = time['time']['nome'];
-                time['time_info']['nome'] = encurtaNome(time['time']['nome']);
-                
-                time['time'] = undefined;
-                time['pontos'] = statusMercado === 2 ? parseFloat(somatorioJogadoresPontuando.toFixed(1)) : parseFloat( time['pontos'].toFixed(1));
-                time['esquema'] = esquema(time['esquema_id']);
-                time['valor_time'] = undefined;
-                time['patrimonio'] = parseFloat( time['patrimonio'].toFixed(1));
-                time['rodada_atual'] = undefined;
 
+                    time['atletas'][i].reserva = false;
+                }
                 // ordena os jogadores de acordo com suas posições
                 time.atletas = time.atletas.sort((a,b) => {return a['posicao_id']-b['posicao_id']});
             }else {
@@ -137,6 +126,56 @@ module.exports = {
                 time['patrimonio'] = 0;
                 time['rodada_atual'] = undefined;
             }
+            if(time['reservas']) {
+                let qtdAtletasReserva = time['reservas'].length;
+
+                for (let i = 0; i < qtdAtletasReserva; i++) {
+                    let posicao_id = time['reservas'][i]['posicao_id']
+                    let posicao = time['posicoes'][posicao_id]['abreviacao'];
+                    let jogador = time['reservas'][i];
+                    
+                    jogador.nome = undefined;
+                    jogador.apelido = encurtaNome(jogador.apelido);
+                    jogador.slug = undefined;
+                    // jogador.foto = undefined;
+                    // jogador.clube_id = undefined;
+                    jogador.preco_num = undefined;
+                    jogador.variacao_num = undefined;
+                    jogador.jogos_num = undefined;
+                    jogador.media_num= undefined;
+
+                    if(statusMercado === 2){
+                        let atletaJogando = pontuadosJSON['atletas'][jogador.atleta_id] ? true : false;
+                        let idAtleta = jogador.atleta_id;
+                        jogador.pontos_num = atletaJogando ? isCapitao(time['capitao_id'], idAtleta, pontuadosJSON['atletas'][jogador.atleta_id]['pontuacao']) : 0;
+                        jogador.scout = atletaJogando ? pontuadosJSON['atletas'][jogador.atleta_id]['scout'] : null;
+                        somatorioJogadoresPontuando += jogador.pontos_num;
+                    }else{
+                        jogador.pontos_num = isCapitao(time['capitao_id'], jogador.atleta_id, jogador.pontos_num);
+                    }
+                    jogador.posicao = posicao
+                    jogador.posicao_classe = `pos-${posicao}`;
+                    jogador.capitao = time['capitao_id'] === jogador.atleta_id ? true : false;
+
+                    jogador.reserva = true;
+                }
+            }
+
+            time['posicoes'] = undefined;
+            time['status'] = undefined;
+            time['capitao_id'] = undefined;
+            time['montou_time'] = true;
+            time['time_info'] = {};
+            time['time_info']['escudo_url'] = time['time']['url_escudo_png'];
+            time['time_info']['nome_completo'] = time['time']['nome'];
+            time['time_info']['nome'] = encurtaNome(time['time']['nome']);
+            
+            time['time'] = undefined;
+            time['pontos'] = statusMercado === 2 ? parseFloat(somatorioJogadoresPontuando.toFixed(1)) : parseFloat( time['pontos'].toFixed(1));
+            time['esquema'] = esquema(time['esquema_id']);
+            time['valor_time'] = undefined;
+            time['patrimonio'] = parseFloat( time['patrimonio'].toFixed(1));
+            time['rodada_atual'] = undefined;
             
             res.send({
                 time
