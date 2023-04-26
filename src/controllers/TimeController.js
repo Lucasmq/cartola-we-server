@@ -2,9 +2,13 @@ const axios = require('axios');
 
 const URL = 'https://api.cartolafc.globo.com/time/id/';
 
-const URL_MERCADO = 'https://api.cartolafc.globo.com/mercado/status';
+const URL_MERCADO_STATUS = 'https://api.cartolafc.globo.com/mercado/status';
+
+const URL_MERCADO_ATLETAS = "https://api.cartola.globo.com/atletas/mercado";
 
 const URL_PONTUADOS = 'https://api.cartolafc.globo.com/atletas/pontuados';
+
+const URL_CLUBES = 'https://api.cartola.globo.com/clubes';
 
 module.exports = {
     async infoTime(req, res) {
@@ -51,7 +55,7 @@ module.exports = {
         }
         
         async function getStatusMercado(){
-            let response = await axios.get(URL_MERCADO);
+            let response = await axios.get(URL_MERCADO_STATUS);
             let statusMercado = response.data.status_mercado;
             return statusMercado;
         }
@@ -63,8 +67,12 @@ module.exports = {
         } 
 
         try {
-            let response = await axios.get(`${URL}${req.params.id}`);
+            let response = await axios.get(`${URL}${req.params.id}`); 
+            let responseMercado = await axios.get(`${URL_MERCADO_ATLETAS}`);
+            let responseClubes = await axios.get(`${URL_CLUBES}`);
+            let clubes = responseClubes.data;
             let time = response.data;
+            let posicoes = responseMercado.data.posicoes;
             let statusMercado = await getStatusMercado();
             // se o mercado estiver aberto
             let pontuadosJSON = (statusMercado != 2 ) ? '' : await pegaPontuados();
@@ -73,7 +81,7 @@ module.exports = {
             if(time['atletas']){
                 for (let i = 0; i < time['atletas'].length; i++) {
                     let posicao_id = time['atletas'][i]['posicao_id']
-                    let posicao = time['posicoes'][posicao_id]['abreviacao'];
+                    let posicao = posicoes[posicao_id]['abreviacao'];
                     
                     
                     time['atletas'][i].nome = undefined;
@@ -107,7 +115,7 @@ module.exports = {
                 time['atletas'] = [];
                 for (let i = 0; i < 12; i++) {
                     time['atletas'][i] = {};
-                    time['atletas'][i].apelido = "NÃ£o Escalado";
+                    time['atletas'][i].apelido = "Não Escalado";
                     time['atletas'][i].pontos_num = "-";
                     time['atletas'][i].posicao = "x";
                     time['atletas'][i].posicao_classe = `pos-gol`;
@@ -131,7 +139,7 @@ module.exports = {
 
                 for (let i = 0; i < qtdAtletasReserva; i++) {
                     let posicao_id = time['reservas'][i]['posicao_id']
-                    let posicao = time['posicoes'][posicao_id]['abreviacao'];
+                    let posicao = posicoes[posicao_id]['abreviacao'];
                     let jogador = time['reservas'][i];
                     
                     jogador.nome = undefined;
@@ -176,6 +184,7 @@ module.exports = {
             time['valor_time'] = undefined;
             time['patrimonio'] = parseFloat( time['patrimonio'].toFixed(1));
             time['rodada_atual'] = undefined;
+            time["clubes"] = clubes;
             
             res.send({
                 time
